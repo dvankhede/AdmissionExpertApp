@@ -3,13 +3,15 @@ package com.springboot.api.controller;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
+import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -22,12 +24,16 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
 import com.springboot.api.domain.User;
 import com.springboot.api.exception.InvalidInputException;
 import com.springboot.api.exception.ResourceConflictException;
 import com.springboot.api.exception.ResourceNotFoundException;
 import com.springboot.api.repository.UserRepository;
+import com.springboot.api.service.EmailService;
+import com.springboot.api.service.UserService;
 import com.springboot.api.util.CommonUtils;
 import com.springboot.api.util.SecurityUtil;
 import com.springboot.api.vo.UserVO;
@@ -40,12 +46,19 @@ import io.swagger.annotations.ApiResponses;
 @RestController
 @Api(value="User operations")
 public class UserController {
+
 	private final Logger logger = LoggerFactory.getLogger(UserController.class);
 	@Autowired
 	private UserRepository userRepository;
 	@Autowired
 	private SecurityUtil secUtils;
 	
+	@Autowired
+	private EmailService emailService;
+
+	@Autowired
+	private UserService userService;
+
 	@PostMapping(value = "/api/v1/user/signup")
 	@Transactional
 	@ApiOperation(value = "Register to app.",response = HttpStatus.class)
@@ -87,6 +100,67 @@ public class UserController {
 		
 	}
 	
+	@PostMapping(value = "/api/forgot/password")
+	@Transactional
+	@ApiOperation(value = "forgot password.", response = HttpStatus.class)
+	@ApiResponses(value = { @ApiResponse(code = 200, message = "A password reset link has been sent to"),
+			@ApiResponse(code = 404, message = "We didn't find an account for that e-mail address.") })
+	public ResponseEntity<HttpStatus> processForgotPasswordForm(@RequestParam("email") String userEmail,
+			HttpServletRequest request) {
+
+		User user = this.userRepository.findByEmail(userEmail);
+
+		if (user != null) {
+			user.setResetToken(UUID.randomUUID().toString());
+
+			userRepository.save(user);
+
+			String origin = request.getHeader("origin");
+
+			emailService.sendEmail(origin, user);
+
+			return new ResponseEntity<HttpStatus>(HttpStatus.OK);
+
+		} else
+			return new ResponseEntity<HttpStatus>(HttpStatus.NOT_FOUND);
+
+	}
+
+	@PostMapping(value = "/reset/password")
+	@Transactional
+	@ApiOperation(value = "reset password.", response = HttpStatus.class)
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "You have successfully reset your password.  You may now login."),
+			@ApiResponse(code = 404, message = "Oops!  This is an invalid password reset link.") })
+	public ResponseEntity<HttpStatus> setNewPassword(@RequestParam String token, @RequestParam String password) {
+
+		Optional<User> user = userService.findUserByResetToken(token);
+
+		if (user.isPresent()) {
+
+			User resetUser = user.get();
+
+			try {
+				resetUser.setPassword(this.secUtils.encryptPass(password));
+			} catch (InvalidKeyException | IllegalBlockSizeException | BadPaddingException | NoSuchAlgorithmException
+					| NoSuchPaddingException | InvalidAlgorithmParameterException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
+			resetUser.setResetToken(null);
+
+			userRepository.save(resetUser);
+
+			return new ResponseEntity<HttpStatus>(HttpStatus.OK);
+
+		} else {
+
+			return new ResponseEntity<HttpStatus>(HttpStatus.NOT_FOUND);
+		}
+
+	}
+
 	@PreAuthorize("hasAuthority('ADMIN_USER') or hasAuthority('STANDARD_USER')")
 	@GetMapping(value = "/api/v1/user")
 	@ApiOperation(value = "Find user profile information for logged in user",response = HttpStatus.class)

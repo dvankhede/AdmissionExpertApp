@@ -149,6 +149,28 @@
 			<artifactId>rsql-parser</artifactId>
 			<version>2.0.0</version>
 		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.springframework/spring-context-support -->
+<dependency>
+    <groupId>org.springframework</groupId>
+    <artifactId>spring-context-support</artifactId>
+    <version>3.2.0.RELEASE</version>
+</dependency>
+		<dependency>
+   <groupId>javax.mail</groupId>
+   <artifactId>mail</artifactId>
+   <version>1.4.7</version>
+</dependency>
+<!-- https://mvnrepository.com/artifact/com.vladmihalcea/hibernate-types-52 -->
+<dependency>
+    <groupId>com.vladmihalcea</groupId>
+    <artifactId>hibernate-types-52</artifactId>
+    <version>1.0.0</version>
+</dependency>
+<dependency>
+    <groupId>com.h2database</groupId>
+    <artifactId>h2</artifactId>
+    <scope>runtime</scope>
+</dependency>
 
 	</dependencies>
 	<build>
