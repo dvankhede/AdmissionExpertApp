@@ -12,6 +12,7 @@ import com.admission.expert.domain.User;
 import com.admission.expert.domain.UserRole;
 import com.admission.expert.dto.AssignRoleToUserDTO;
 import com.admission.expert.dto.RolesByUserDTO;
+import com.admission.expert.dto.UserRolesDto;
 import com.admission.expert.repository.RoleRepository;
 import com.admission.expert.repository.UserRepository;
 import com.admission.expert.repository.UserRoleRepository;
@@ -82,6 +83,18 @@ public class RoleServiceImpl implements RoleService {
 			rolesByUserDTOs.add(rolesByUserDTO);
 		}
 		return rolesByUserDTOs;
+	}
+
+	@Override
+	public List<Role> getAllUserRoles() {
+		// TODO Auto-generated method stub		
+		return roleRepository.findAll();
+	}
+
+	@Override
+	public Optional<Role> getRoleByRoleId(Long roleId) {
+		// TODO Auto-generated method stub
+		return roleRepository.findById(roleId);
 	}
 
 }

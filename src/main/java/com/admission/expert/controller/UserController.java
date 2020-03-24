@@ -3,6 +3,8 @@ package com.admission.expert.controller;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -22,9 +24,13 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.admission.expert.domain.User;
@@ -58,7 +64,7 @@ public class UserController {
 
 	@Autowired
 	private UserService userService;
-
+	
 	@PostMapping(value = "/api/v1/user/signup")
 	@Transactional
 	@ApiOperation(value = "Register to app.",response = HttpStatus.class)
@@ -99,6 +105,58 @@ public class UserController {
 		return new ResponseEntity<HttpStatus>(HttpStatus.CREATED);
 		
 	}
+	
+	@RequestMapping(value = "/api/getAllUser", method = RequestMethod.GET)
+	@ResponseBody
+	public List<UserVO> getUser(){
+		 List<User> listOfUser = userService.getAllUser();
+		 List<UserVO> userListDto = new ArrayList<>();
+		 for (User user : listOfUser) {
+			 UserVO userDto= mapEntityListToDto(user);
+			 userListDto.add(userDto);	 
+		} 
+		 return userListDto;	
+	}
+	
+	@RequestMapping(value="/api/getUserById/{userId}", method =  RequestMethod.GET)
+	@ResponseBody
+	public UserVO getUserByID(@PathVariable("userId") Long userId) {
+		Optional<User> userById = userService.getUserById(userId); 
+		UserVO userDto = mapEnitityToDto(userById);
+		return userDto;
+	}
+	
+	@RequestMapping( value= "/api/updateUserById/{userId}", method = RequestMethod.PUT)
+	@ResponseBody
+	public UserVO updateUserById(@PathVariable ("userId")Long userId, @RequestBody UserVO userReqDto)
+	{
+		Optional<User> updateUserId = userService.updateUserById(userId, userReqDto);
+		UserVO userDto = mapEnitityToDto(updateUserId);
+		return userDto;
+	}
+	
+	private UserVO mapEntityListToDto(User userall) {
+		UserVO userDto = new UserVO();
+		userDto.setId(userall.getId());
+		userDto.setName(userall.getName());
+		userDto.setEmail(userall.getName());
+		userDto.setEmail(userall.getEmail());
+		userDto.setCity(userall.getCity());
+		userDto.setMobile(userall.getMobile());
+		return userDto;		
+	}
+	
+	public UserVO  mapEnitityToDto(Optional<User> userById) {
+		UserVO userDto = new UserVO();
+		userDto.setId(userById.get().getId());
+		userDto.setName(userById.get().getName());
+		userDto.setEmail(userById.get().getName());
+		userDto.setEmail(userById.get().getEmail());
+		userDto.setCity(userById.get().getCity());
+		userDto.setMobile(userById.get().getMobile());
+		return userDto;		
+	}
+	
 	
 	@PostMapping(value = "/api/forgot/password")
 	@Transactional

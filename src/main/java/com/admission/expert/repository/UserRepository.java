@@ -18,6 +18,6 @@ public interface UserRepository extends CrudRepository<User, Long> {
     String encryptPass(String password);
 
 	Optional<User> findByResetToken(String resetToken);
-
-
+	Optional<User> findById(Long userId);
+	
 }
