@@ -89,4 +89,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	public static Oauth2ClientPasswordEncoder passwordEncoder() {
 		return (Oauth2ClientPasswordEncoder) Oauth2ClientPasswordEncoder.getInstance();
 	}
+
+
 }

@@ -29,7 +29,7 @@ public class ResourceServerConfig extends ResourceServerConfigurerAdapter {
                 .requestMatchers()
                 .and()
                 .authorizeRequests()
-                .antMatchers("/actuator/**", "/api-docs/**").permitAll()
+				.antMatchers("/actuator/**", "/api-docs/**").permitAll()
                 .antMatchers("/springboot/**" ).authenticated();
     }
 }
