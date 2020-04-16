@@ -2,12 +2,14 @@ package com.admission.expert.repository;
 
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.CrudRepository;
 
 import com.admission.expert.domain.User;
 
-public interface UserRepository extends CrudRepository<User, Long> {
+public interface UserRepository extends JpaRepository<User, Long> {
     
 	User findByEmail(String email);
     
@@ -19,5 +21,7 @@ public interface UserRepository extends CrudRepository<User, Long> {
 
 	Optional<User> findByResetToken(String resetToken);
 
+	@Override
+	Page<User> findAll(Pageable pageable);
 
 }
