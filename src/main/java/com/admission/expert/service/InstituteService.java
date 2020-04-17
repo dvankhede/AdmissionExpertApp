@@ -1,6 +1,7 @@
 package com.admission.expert.service;
 
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import com.admission.expert.domain.Institute;
 import com.admission.expert.domain.User;
@@ -12,7 +13,7 @@ public interface InstituteService {
 
 	public Institute update(InstituteDTO instituteDTO, Long instituteId, User loggedInUser);
 
-	public List<Institute> findAll();
+	public Page<InstituteDTO> findAll(Pageable pageable);
 
 	public Institute findById(Long instituteId);
 

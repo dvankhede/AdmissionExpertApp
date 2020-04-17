@@ -1,5 +1,6 @@
 package com.admission.expert.service.impl;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -8,6 +9,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,10 +45,11 @@ public class InstituteServiceImpl implements InstituteService {
 	public Institute add(InstituteDTO instituteDTO, User loggedInUser) {
 		LOGGER.debug("Adding a new institute  entry with information: {}", instituteDTO);
 		Institute institute = new Institute();
-		BeanUtils.copyProperties(institute, instituteDTO);
+		BeanUtils.copyProperties(instituteDTO, institute);
 		institute.setStatus('A');
 		setCoursesToInstitute(instituteDTO, institute);
 		institute.setCreatedOn(new Date());
+		institute.setCreatedBy(loggedInUser.getId());
 		institute.setUpdatedBy(loggedInUser.getId());
 		institute.setUpdatedOn(new Date());
 		return instituteRepository.save(institute);
@@ -78,9 +83,16 @@ public class InstituteServiceImpl implements InstituteService {
 
 	@Transactional(readOnly = true)
 	@Override
-	public List<Institute> findAll() {
-		LOGGER.debug("Finding all Institute entries");
-		return instituteRepository.findAllActive();
+	public Page<InstituteDTO> findAll(Pageable pageable) {
+		Page<Institute> institutes = instituteRepository.findAllActive(pageable);
+		List<InstituteDTO> instituteDTOs = new ArrayList<InstituteDTO>();
+		for (Institute institute : institutes.getContent()) {
+			InstituteDTO instituteDTO = new InstituteDTO();
+			BeanUtils.copyProperties(institute, instituteDTO);
+			instituteDTOs.add(instituteDTO);
+		}
+		return new PageImpl<>(instituteDTOs, pageable, institutes.getTotalElements());
+
 	}
 
 	@Transactional(readOnly = true)
